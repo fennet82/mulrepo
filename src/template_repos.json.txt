@@ -1,0 +1,12 @@
+{
+    "repos": {
+        {
+            "name": <str>,                                    -   name of the repository, doesnt need to be the actual name of the repository.
+            "path": <str>,                                      -   path is basically the path of the repository (it's better if youll use the full path of the repository)
+            "include": <bool>,                               -  include is boolean value that indicates if the current repo will be included in the iteration of repos
+            "critical_branches": <str_list>,             -   critical_branches is a mention of all the branches that needs protection (asking before commiting and asking before pushing)
+            "auto_push": <bool>                           -  auto_push will automatically push the staged files (if the current branch in critical_branches auto_push will have no affect) to the repo without asking the user for permission
+        },
+        ...
+    }
+}

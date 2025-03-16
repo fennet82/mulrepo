@@ -1,0 +1,18 @@
+{
+    "repos": [
+        {
+            "name": "backend",
+            "path": "/home/user/projects/backend",
+            "include": true,
+            "critical_branches": ["main"],
+            "auto_push": true
+        },
+        {
+            "name": "frontend",
+            "path": "C:\\Projects\\frontend",
+            "include": true,
+            "critical_branches": ["dev", "staging"],
+            "auto_push": false
+        }
+    ]
+}

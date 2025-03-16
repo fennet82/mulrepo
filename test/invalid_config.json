@@ -1,0 +1,18 @@
+{
+    "repos": [
+        {
+            "name": "my-repo",
+            "path": "/home/user/projects/my-repo",
+            "include": true,
+            "critical_branches": ["main", "dev"],
+            "auto_push": false
+        },
+        {
+            "name": "my-repo",
+            "path": "C:\\Projects\\my-repo",
+            "include": false,
+            "critical_branches": ["master"],
+            "auto_push": true
+        }
+    ]
+}
