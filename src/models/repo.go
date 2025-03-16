@@ -1,13 +1,8 @@
 package models
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"bufio"
-    "fmt"
-    "os"
-    "strings"
+	"mulrepo/custom_errors"
 
 	logger "log/slog"
 
@@ -15,32 +10,57 @@ import (
 )
 
 type Repo struct {
-	Name            string   `json:"name"`
-	Path            string   `json:"path"`
-	Include         bool     `json:"include"`
-	CrticalBranches []string `json:"crtical_branches"`
-	AutoPush        bool     `json:"auto_push"`
+	Name             string   `json:"name"`
+	Path             string   `json:"path"`
+	Include          bool     `json:"include"`
+	CriticalBranches []string `json:"critical_branches"`
+	AutoPush         bool     `json:"auto_push"`
+	WorkTree         *git.Worktree
 }
 
-func (repo *Repo) GetGitStatus() (error) {
+func (repo *Repo) InitRepo() error {
+	if repo == nil {
+		return &custom_errors.ErrNilPointerReferenced{}
+	}
 
-}
-
-func (repo *Repo) GitCommit(CommitMsg string) (error) {
-
-}
-
-func (repo *Repo) GitPush() (error) {
-	git_repo, err := git.PlainOpen(repo.Path)
+	r, err := git.PlainOpen(repo.Path)
 	if err != nil {
-		fmt.Errorf("GitPush(): error occured in function on repo: %s, %w", repo.Name, err)
+		err := &custom_errors.ErrRepoCantBeOpened{RepoName: repo.Name, RepoPath: repo.Path, Traceback: err}
+		logger.Error(err.Error())
+
+		return err
 	}
 
-	if !repo.AutoPush {
-		var 
+	worktree, err := r.Worktree()
+	if err != nil {
+		err := &custom_errors.ErrGettingRepoWorkTree{RepoName: repo.Name, Traceback: err}
+		logger.Error(err.Error())
+
+		return err
 	}
+
+	repo.WorkTree = worktree
+	logger.Info(fmt.Sprintf("got repo's: %s worktree successfully", repo.Name))
+
+	return nil
 }
 
-func (repo *Repo) GitFetch() (error) {
+func (repo *Repo) GetGitStatus() (string, bool, error) {
+	status, err := repo.WorkTree.Status()
+	if err != nil {
+		err := &custom_errors.ErrGettingRepoStatus{RepoName: repo.Name, Traceback: err}
+		logger.Error(err.Error())
+
+		return "", true, err
+	}
+
+	return status.String(), status.IsClean(), nil
+}
+
+func (repo *Repo) GitCommit(CommitMsg string) error {
+
+}
+
+func (repo *Repo) GitPush() error {
 
 }

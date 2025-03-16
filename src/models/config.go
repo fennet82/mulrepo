@@ -3,15 +3,16 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"mulrepo/errors"
+	"mulrepo/custom_errors"
 	"os"
 	"sync"
 )
 
 type Config struct {
-	ConfigFilePath string
-	ExportFilePath string
-	ReposInstance  *Repos
+	GlobalBasicGitAuth *BasicGitAuth
+	ConfigFilePath     string
+	ExportFilePath     string
+	ReposInstance      *Repos
 }
 
 var (
@@ -66,7 +67,7 @@ func (config *Config) LoadConfigFromJson(JsonFilePath string) (*Repos, error) {
 
 func (config *Config) PrintConfigTemplate() error {
 	if config == nil {
-		return errors.ErrNilPointerReferenced
+		return custom_errors.ErrNilPointerReferenced
 	}
 
 	fmt.Printf(`
@@ -92,14 +93,14 @@ func (config *Config) GetIncludedRepos() (*Repos, error) {
 
 	for _, repo := range config.ReposInstance.Repos {
 		if repo.Include {
-            IncludedRepos[&repo] = struct{}{}
-        }
+			IncludedRepos[&repo] = struct{}{}
+		}
 	}
 
-    includedReposList := &Repos{}
+	includedReposList := &Repos{}
 	for repo := range IncludedRepos {
-        includedReposList.Repos = append(includedReposList.Repos, *repo)
-    }
+		includedReposList.Repos = append(includedReposList.Repos, *repo)
+	}
 
-    return includedReposList, nil
+	return includedReposList, nil
 }

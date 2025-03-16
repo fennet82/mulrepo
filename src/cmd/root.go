@@ -36,7 +36,6 @@ var rootCmd = &cobra.Command{
 
 				mulrepo commit  ( [ on / -o ] <repo_name> )   (iterates on repos and commits them, or commit on specified repo)
 				mulrepo push ( [ on / -o ]  <repo_name> )   (iterates on included repos and pushes them, or push on specified repo)
-				mulrepo fetch ( [ on / -o ]  <repo_name> )  (iterates on included repos and fetches them, or fetch on specified repo)
 	`,
 }
 

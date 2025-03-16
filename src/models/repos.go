@@ -3,14 +3,14 @@ package models
 import (
 	"fmt"
 	logger "log/slog"
-	"mulrepo/errors"
+	"mulrepo/custom_errors"
 	"slices"
 
 	"github.com/go-playground/validator"
 )
 
 type Repos struct {
-	Repos []Repo `json:"repos" validate:"are_names_unique"`
+	Repos []Repo `validate:"are_names_unique"`
 }
 
 // validators
@@ -23,7 +23,7 @@ func ValidateNamesUniqueness(fl validator.FieldLevel) bool {
 	seen := make(map[string]struct{})
 	for _, repo := range repos {
 		if _, exists := seen[repo.Name]; exists {
-			err := &errors.ErrDuplicateName{DuplicateName: repo.Name, ConfigFilePath: GetConfig().ConfigFilePath}
+			err := &custom_errors.ErrDuplicateName{DuplicateName: repo.Name, ConfigFilePath: GetConfig().ConfigFilePath}
 			logger.Error(err.Error())
 
 			return false
@@ -49,7 +49,7 @@ func Validate(repos Repos) bool {
 // struct functions
 func (repos *Repos) ListRepos() error {
 	if repos == nil {
-		return errors.ErrNilPointerReferenced
+		return custom_errors.ErrNilPointerReferenced
 	}
 	for index, repo := range repos.Repos {
 		fmt.Printf("%d - %+v", index, repo)
@@ -66,7 +66,7 @@ func (repos *Repos) DeleteRepoByName(Name string) error {
 	})
 
 	if len(repos.Repos) == originalLength {
-		return &errors.ErrRepoNotFoundError{RepoName: Name}
+		return &custom_errors.ErrRepoNotFoundError{RepoName: Name}
 	}
 
 	return nil
@@ -75,10 +75,10 @@ func (repos *Repos) DeleteRepoByName(Name string) error {
 func (repos *Repos) UpdateRepoByName(Name string, updatedRepo Repo) error {
 	repo, err := repos.GetRepoByName(Name)
 	if err != nil {
-		return &errors.ErrRepoNotFoundError{RepoName: Name}
+		return &custom_errors.ErrRepoNotFoundError{RepoName: Name}
 	}
-	*repo = updatedRepo	
-	
+	*repo = updatedRepo
+
 	return nil
 }
 
@@ -95,5 +95,5 @@ func (repos *Repos) GetRepoByName(Name string) (*Repo, error) {
 		}
 	}
 
-	return nil, &errors.ErrRepoNotFoundError{RepoName: Name}
+	return nil, &custom_errors.ErrRepoNotFoundError{RepoName: Name}
 }
