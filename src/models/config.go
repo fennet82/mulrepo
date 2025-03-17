@@ -3,16 +3,21 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	logger "log/slog"
 	"mulrepo/custom_errors"
 	"os"
 	"sync"
+
+	"github.com/go-playground/validator"
 )
 
+type RepoSlice []Repo
+
 type Config struct {
-	GlobalBasicGitAuth *BasicGitAuth
+	GlobalBasicGitAuth *BasicGitAuth `json:"auth"`
 	ConfigFilePath     string
 	ExportFilePath     string
-	ReposInstance      *Repos
+	ReposInstance      []Repo `json:"repos" validate:"are_names_unique"`
 }
 
 var (
@@ -23,13 +28,47 @@ var (
 func GetConfig() *Config {
 	once.Do(func() {
 		configInstance = &Config{
-			ConfigFilePath: "",
-			ExportFilePath: ".",
-			ReposInstance:  &Repos{},
+			GlobalBasicGitAuth: &BasicGitAuth{},
+			ConfigFilePath:     "",
+			ExportFilePath:     ".",
+			ReposInstance:      &Repos{},
 		}
 	})
 
 	return configInstance
+}
+
+// validators
+func ValidateNamesUniqueness(fl validator.FieldLevel) bool {
+	repos, ok := fl.Field().Interface().([]Repo)
+	if !ok {
+		return false
+	}
+
+	seen := make(map[string]struct{})
+	for _, repo := range repos {
+		if _, exists := seen[repo.Name]; exists {
+			err := &custom_errors.ErrDuplicateName{DuplicateName: repo.Name, ConfigFilePath: GetConfig().ConfigFilePath}
+			logger.Error(err.Error())
+
+			return false
+		}
+		seen[repo.Name] = struct{}{}
+	}
+	return true
+}
+
+func Validate(repos Repos) bool {
+	validate := validator.New()
+
+	err := validate.RegisterValidation("are_names_unique", ValidateNamesUniqueness)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Error registering custom validation: %s", err.Error()))
+	}
+
+	validationErr := validate.Struct(repos)
+
+	return validationErr == nil
 }
 
 func (config *Config) MarshalReposToJSON(path string) error {
